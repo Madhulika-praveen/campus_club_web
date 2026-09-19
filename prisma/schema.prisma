@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,28 +9,32 @@ datasource db {
 }
 
 model Student {
-  student_id Int @id @default(autoincrement())
-  name       String
-  email      String @unique
-  password   String
-
-  bookmarks  Bookmark[]
+  student_id    Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password      String
+  interests     String[]        @default([])
+  bookmarks     Bookmark[]
+  views         EventView[]
+  rsvps         RSVP[]
+  feedback      EventFeedback[]
+  notInterested NotInterested[]
 }
 
 model Organizer {
-  org_id   Int @id @default(autoincrement())
+  org_id   Int    @id @default(autoincrement())
   name     String
   email    String @unique
   password String
 
   club_id Int
-  club    Club @relation(fields: [club_id], references: [club_id])
+  club    Club   @relation(fields: [club_id], references: [club_id])
 
-  events  Event[]
+  events Event[]
 }
 
 model Faculty {
-  faculty_id Int @id @default(autoincrement())
+  faculty_id Int    @id @default(autoincrement())
   name       String
   email      String @unique
   password   String
@@ -39,14 +44,14 @@ model Faculty {
 }
 
 model Admin {
-  admin_id Int @id @default(autoincrement())
+  admin_id Int    @id @default(autoincrement())
   name     String
   email    String @unique
   password String
 }
 
 model Club {
-  club_id     Int @id @default(autoincrement())
+  club_id     Int    @id @default(autoincrement())
   club_name   String
   description String
 
@@ -56,28 +61,71 @@ model Club {
 }
 
 model Event {
-  event_id   Int @id @default(autoincrement())
-  title      String
-  description String
-  date       DateTime
-  time       String
-  venue      String
-  status     String @default("PENDING")
+  event_id      Int             @id @default(autoincrement())
+  title         String
+  description   String
+  date          DateTime
+  endDate       DateTime?
+  time          String
+  venue         String
+  status        String          @default("PENDING")
+  category      String?
+  tags          String[]        @default([])
+  capacity      Int?
+  posterUrl     String?
+  extractedText String?
+  createdAt     DateTime        @default(now())
 
-  club_id   Int
-  club      Club @relation(fields: [club_id], references: [club_id])
-
+  club_id    Int
+  club       Club            @relation(fields: [club_id], references: [club_id])
   created_by Int
-  organizer  Organizer @relation(fields: [created_by], references: [org_id])
+  organizer  Organizer       @relation(fields: [created_by], references: [org_id])
 
   promotions EventPromotion[]
   bookmarks  Bookmark[]
+  views      EventView[]
+  rsvps      RSVP[]
+  feedback   EventFeedback[]
+
+  @@index([status])
+  @@index([date])
+  @@index([club_id])
+  @@index([category])
 }
 
 model Bookmark {
-  id         Int @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   student_id Int
   event_id   Int
+  createdAt  DateTime @default(now())
+
+  student Student @relation(fields: [student_id], references: [student_id])
+  event   Event   @relation(fields: [event_id], references: [event_id])
+
+  @@unique([student_id, event_id])
+  @@index([student_id])
+  @@index([event_id])
+}
+
+model EventView {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  event_id   Int
+  createdAt  DateTime @default(now())
+
+  student Student @relation(fields: [student_id], references: [student_id])
+  event   Event   @relation(fields: [event_id], references: [event_id])
+
+  @@unique([student_id, event_id])
+  @@index([student_id])
+}
+
+model RSVP {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  event_id   Int
+  status     String   @default("GOING")
+  createdAt  DateTime @default(now())
 
   student Student @relation(fields: [student_id], references: [student_id])
   event   Event   @relation(fields: [event_id], references: [event_id])
@@ -85,8 +133,33 @@ model Bookmark {
   @@unique([student_id, event_id])
 }
 
+model EventFeedback {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  event_id   Int
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  student Student @relation(fields: [student_id], references: [student_id])
+  event   Event   @relation(fields: [event_id], references: [event_id])
+
+  @@unique([student_id, event_id])
+}
+
+model NotInterested {
+  id         Int      @id @default(autoincrement())
+  student_id Int
+  category   String?
+  tag        String?
+  event_id   Int?
+  createdAt  DateTime @default(now())
+
+  student Student @relation(fields: [student_id], references: [student_id])
+}
+
 model EventPromotion {
-  promo_id   Int @id @default(autoincrement())
+  promo_id   Int     @id @default(autoincrement())
   media_type String
   media_url  String
   caption    String?

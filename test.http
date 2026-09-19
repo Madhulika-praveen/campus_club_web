@@ -1,7 +1,30 @@
-POST http://127.0.0.1:3000/clubs
+### Login as Alice (tech-leaning)
+POST http://localhost:3000/student/login
 Content-Type: application/json
 
 {
-  "club_name": "Coding Club",
-  "description": "Tech events"
+  "email": "alice@test.com",
+  "password": "1234"
 }
+
+### Login as Bina (arts-leaning)
+POST http://localhost:3000/student/login
+Content-Type: application/json
+
+{
+  "email": "bina@test.com",
+  "password": "1234"
+}
+
+### Login as Chetan (cold start)
+POST http://localhost:3000/student/login
+Content-Type: application/json
+
+{
+  "email": "chetan@test.com",
+  "password": "1234"
+}
+
+### Get recommendations (paste token from a login response above, no quotes)
+GET http://localhost:3000/events/recommended
+Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3ODg2NjI5NTd9.ax-rJlES0mR-_hDynNlyMD3iDWeYlGvD_jtGITUYIVk
