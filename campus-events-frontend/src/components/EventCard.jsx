@@ -1,4 +1,8 @@
-function EventCard({ item }) {
+
+import { useEffect, useState } from "react";
+import { addBookmark, removeBookmark } from "../services/api";
+
+function EventCard({ item, onBookmarkChange }) {
   const event = item.event || item;
 
   const recommendationScore =
@@ -7,6 +11,41 @@ function EventCard({ item }) {
       : null;
 
   const date = new Date(event.date);
+
+  const [isBookmarked, setIsBookmarked] = useState(
+    Boolean(item.isBookmarked)
+  );
+
+  useEffect(() => {
+    setIsBookmarked(Boolean(item.isBookmarked));
+  }, [item.isBookmarked]);
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleBookmark = async () => {
+    setLoading(true);
+    setMessage("");
+
+    try {
+      if (isBookmarked) {
+        await removeBookmark(event.event_id);
+        setIsBookmarked(false);
+        onBookmarkChange?.(event.event_id, false);
+        setMessage("Bookmark removed");
+      } else {
+        await addBookmark(event.event_id);
+        setIsBookmarked(true);
+        onBookmarkChange?.(event.event_id, true);
+        setMessage("Event bookmarked!");
+      }
+    } catch (error) {
+      console.error("Bookmark error:", error);
+      setMessage("Could not update bookmark. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="event-card">
@@ -39,9 +78,24 @@ function EventCard({ item }) {
           </div>
         )}
 
-        <button className="view-event-button">
-          View Event
+        <button
+          className="view-event-button"
+          onClick={handleBookmark}
+          disabled={loading}
+          type="button"
+        >
+          {loading
+            ? "Please wait..."
+            : isBookmarked
+              ? "♥ Remove Bookmark"
+              : "♡ Bookmark Event"}
         </button>
+
+        {message && (
+          <p role="status" aria-live="polite">
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
